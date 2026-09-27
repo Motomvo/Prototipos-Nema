@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patagón Sensor — Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#4C9960; --green-dark:#3C7A4E; --sage:#D3E6CD; --ink:#1E2A20;
+    --muted:#6F8172; --line:#DCEAD8; --panel:#FFFFFF; --bg:#F1F8EF; --alert:#D2553B;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:inherit;}
+  body{
+    height:100%;margin:0;background:var(--bg);color:var(--ink);
+    font-family:'Inter',sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;
+    display:flex;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#141C15;--panel:#1D281E;--line:#37473A;--ink:#EEF3EC;--muted:#A9BBAB;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#141C15;--panel:#1D281E;--line:#37473A;--ink:#EEF3EC;--muted:#A9BBAB;
+  }
+  h1,h2,.brand,nav.side button{font-family:'Poppins',sans-serif;}
+
+  /* Barra lateral */
+  aside{
+    width:216px;flex:none;background:var(--panel);border-right:1px solid var(--line);
+    padding:22px 16px;display:flex;flex-direction:column;gap:26px;height:100vh;position:sticky;top:0;
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;padding:0 6px;}
+  .brand .sq{width:14px;height:14px;background:var(--green);border-radius:3px;flex:none;}
+  nav.side{display:flex;flex-direction:column;gap:2px;}
+  nav.side button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border-radius:6px;color:var(--muted);font-size:14px;font-weight:600;
+    border-left:3px solid transparent;transition:.15s;
+  }
+  nav.side button:hover{color:var(--ink);}
+  nav.side button.active{color:var(--green);border-left-color:var(--green);background:rgba(47,107,63,.08);}
+  .side-foot{margin-top:auto;font-size:12px;color:var(--muted);padding:0 6px;line-height:1.5;}
+
+  main{flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;}
+
+  /* Banner */
+  .banner{
+    position:relative;overflow:hidden;background:#E3F3E1;color:var(--ink);
+    padding:26px 32px;min-height:100px;display:flex;flex-direction:column;justify-content:center;
+    border-bottom:1px solid var(--line);
+  }
+  .banner::before{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg, transparent 55%, var(--sage) 55%, var(--sage) 62%, transparent 62%, transparent 78%, var(--green) 78%, var(--green) 84%, transparent 84%);
+    opacity:.55;
+  }
+  .banner::after{
+    content:"";position:absolute;left:-30px;bottom:-40px;width:140px;height:140px;
+    border-radius:50%;border:14px solid rgba(76,153,96,.18);
+  }
+  .banner .tag{position:relative;z-index:2;font-size:12px;letter-spacing:.3px;color:var(--muted);margin-bottom:4px;}
+  .banner h1{position:relative;z-index:2;margin:0;font-size:21px;font-weight:700;color:var(--ink);}
+  .banner .pill{
+    position:absolute;right:24px;top:50%;transform:translateY(-50%);z-index:3;
+    background:var(--green);color:#fff;border-radius:8px;padding:8px 16px;font-weight:800;font-size:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .banner .pill .sq{width:10px;height:16px;background:#fff;border-radius:2px;}
+  .live{
+    font-size:11px;color:var(--alert);display:flex;align-items:center;gap:6px;position:relative;z-index:2;margin-top:8px;
+  }
+  .live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--alert);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  @media (prefers-reduced-motion: reduce){.live::before{animation:none;}}
+
+  .content{flex:1;padding:28px 32px 40px;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .section-title{margin:0 0 4px;font-size:22px;font-weight:700;color:var(--green);}
+  .rule{height:2px;background:var(--green);width:64px;margin:0 0 22px;}
+
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:26px;}
+  .metric{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;}
+  .metric .label{font-size:12px;color:var(--muted);margin-bottom:8px;}
+  .metric .val{font-size:23px;font-weight:700;}
+  .metric.alert{border-color:var(--alert);}
+  .metric.alert .val{color:var(--alert);}
+  .metric .sub{font-size:11px;color:var(--muted);margin-top:5px;}
+
+  .row2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start;}
+  @media (max-width:860px){.row2{grid-template-columns:1fr;}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;}
+  .panel h2{font-size:13px;margin:0 0 14px;color:var(--muted);font-weight:600;}
+  .chart-wrap svg{width:100%;height:180px;display:block;}
+  .chart-legend{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px;}
+
+  .alerts{display:flex;flex-direction:column;gap:10px;}
+  .alert-item{display:flex;gap:10px;padding:10px 12px;border-radius:6px;background:var(--bg);border:1px solid var(--line);font-size:13px;}
+  .alert-item .mark{width:6px;border-radius:4px;flex:none;background:var(--sage);}
+  .alert-item.high .mark{background:var(--alert);}
+  .alert-item.mid .mark{background:#B98A3D;}
+  .alert-item.low .mark{background:var(--green);}
+  .alert-item .t{color:var(--muted);font-size:11px;margin-top:3px;}
+
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px;background:var(--panel);}
+  thead th{
+    text-align:left;font-weight:700;color:var(--ink);font-size:13px;
+    padding:12px 16px;border-bottom:2px solid var(--green);
+  }
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--line);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.name{font-weight:600;}
+  .status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--line);}
+  .status.ok{color:var(--green);}
+  .status.warn{color:var(--alert);border-color:var(--alert);}
+  .status.off{color:var(--muted);}
+  .status .d{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  /* Footer bicolor bar */
+  .footbar{height:8px;display:flex;flex:none;}
+  .footbar span{flex:1;}
+  .footbar .g{background:var(--sage);}
+  .footbar .r{background:var(--green);flex:1.2;}
+
+  @media (max-width:760px){
+    body{flex-direction:column;}
+    aside{width:100%;height:auto;position:static;flex-direction:row;align-items:center;padding:14px 16px;overflow-x:auto;}
+    aside .brand{flex:none;}
+    nav.side{flex-direction:row;}
+    .side-foot{display:none;}
+    .banner{padding:20px 20px;}
+    .banner .pill{position:static;transform:none;display:inline-flex;margin-top:10px;}
+    .content{padding:20px 16px 32px;}
+  }
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand"><span class="sq"></span> Patagón Sensor</div>
+  <nav class="side">
+    <button class="active" data-view="resumen">Resumen</button>
+    <button data-view="sensores">Sensores</button>
+    <button data-view="alertas">Alertas</button>
+  </nav>
+  <div class="side-foot">Invernadero Norte<br>Punta Arenas, Magallanes</div>
+</aside>
+
+<main>
+  <div class="banner">
+    <div class="tag">Invernadero Norte · Punta Arenas</div>
+    <h1 id="page-title">Resumen</h1>
+    <div class="live">EN VIVO</div>
+    <div class="pill"><span class="sq"></span>Patagón Sensor</div>
+  </div>
+
+  <div class="content">
+    <!-- RESUMEN -->
+    <section class="view active" id="view-resumen">
+      <div class="section-title">Panel en tiempo real</div>
+      <div class="rule"></div>
+
+      <div class="metrics">
+        <div class="metric alert">
+          <div class="label">Temperatura suelo</div>
+          <div class="val">−1.8°C</div>
+          <div class="sub">Alerta de helada activa</div>
+        </div>
+        <div class="metric">
+          <div class="label">Humedad suelo</div>
+          <div class="val">34%</div>
+          <div class="sub">Teros 12 · FDR</div>
+        </div>
+        <div class="metric">
+          <div class="label">Viento</div>
+          <div class="val">42 km/h</div>
+          <div class="sub">Anemómetro</div>
+        </div>
+        <div class="metric">
+          <div class="label">Luz (PAR)</div>
+          <div class="val">180 µmol</div>
+          <div class="sub">Radiación fotosintética</div>
+        </div>
+        <div class="metric">
+          <div class="label">CO₂ ambiente</div>
+          <div class="val">410 ppm</div>
+          <div class="sub">Sensor de invernadero</div>
+        </div>
+        <div class="metric">
+          <div class="label">Humedad foliar</div>
+          <div class="val">Seco</div>
+          <div class="sub">Ecowitt WN35</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="panel">
+          <h2>Temperatura de suelo — últimas 24h</h2>
+          <div class="chart-wrap">
+            <svg viewBox="0 0 600 180" preserveAspectRatio="none">
+              <line x1="0" y1="120" x2="600" y2="120" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 4"/>
+              <text x="4" y="115" fill="var(--muted)" font-size="10">0°C</text>
+              <polyline fill="none" stroke="var(--green)" stroke-width="2"
+                points="0,60 50,66 100,80 150,95 200,110 250,125 300,132 350,140 400,132 450,110 500,90 550,70 600,55"/>
+              <polyline fill="none" stroke="var(--alert)" stroke-width="2" stroke-dasharray="3 3" points="0,120 600,120"/>
+              <circle cx="400" cy="132" r="4" fill="var(--alert)"/>
+            </svg>
+          </div>
+          <div class="chart-legend"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:59</span></div>
+        </div>
+
+        <div class="panel">
+          <h2>Alertas recientes</h2>
+          <div class="alerts">
+            <div class="alert-item high"><div class="mark"></div><div><div>Riesgo de helada negra en Invernadero Norte</div><div class="t">hace 12 min</div></div></div>
+            <div class="alert-item mid"><div class="mark"></div><div><div>Viento sobre 40 km/h, revisar estructura</div><div class="t">hace 40 min</div></div></div>
+            <div class="alert-item low"><div class="mark"></div><div><div>CO₂ estable, ventilación no requerida</div><div class="t">hace 1 h</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SENSORES -->
+    <section class="view" id="view-sensores">
+      <div class="section-title">Sensores instalados</div>
+      <div class="rule"></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Sensor</th><th>Mide</th><th>Ubicación</th><th>Última lectura</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Teros 12</td><td>Humedad + temp. + CE suelo</td><td>Invernadero Norte</td><td>−1.8°C</td><td><span class="status warn"><span class="d"></span>Alerta</span></td></tr>
+            <tr><td class="name">Anemómetro</td><td>Viento</td><td>Torre exterior</td><td>42 km/h</td><td><span class="status ok"><span class="d"></span>Activo</span></td></tr>
+            <tr><td class="name">Sensor PAR (LI-190R)</td><td>Radiación fotosintética</td><td>Invernadero Norte</td><td>180 µmol</td><td><span class="status ok"><span class="d"></span>Activo</span></td></tr>
+            <tr><td class="name">CO₂ invernadero</td><td>Concentración de CO₂</td><td>Invernadero Norte</td><td>410 ppm</td><td><span class="status ok"><span class="d"></span>Activo</span></td></tr>
+            <tr><td class="name">Ecowitt WN35</td><td>Humedad foliar</td><td>Invernadero Sur</td><td>Seco</td><td><span class="status ok"><span class="d"></span>Activo</span></td></tr>
+            <tr><td class="name">Sensor NPK (DFRobot)</td><td>Nitrógeno, fósforo, potasio</td><td>Campo abierto</td><td>Sin datos</td><td><span class="status off"><span class="d"></span>Sin señal</span></td></tr>
+            <tr><td class="name">Estación Davis</td><td>Temp., humedad, viento, lluvia</td><td>Torre exterior</td><td>3.2°C</td><td><span class="status ok"><span class="d"></span>Activo</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ALERTAS -->
+    <section class="view" id="view-alertas">
+      <div class="section-title">Historial de alertas</div>
+      <div class="rule"></div>
+      <div class="panel">
+        <div class="alerts">
+          <div class="alert-item high"><div class="mark"></div><div><div>Riesgo de helada negra — Invernadero Norte</div><div class="t">Hoy, 06:14</div></div></div>
+          <div class="alert-item mid"><div class="mark"></div><div><div>Viento sobre umbral (40 km/h) — Torre exterior</div><div class="t">Hoy, 05:46</div></div></div>
+          <div class="alert-item low"><div class="mark"></div><div><div>CO₂ normalizado tras ventilación</div><div class="t">Hoy, 04:58</div></div></div>
+          <div class="alert-item mid"><div class="mark"></div><div><div>Humedad de suelo bajo 30% — revisar riego</div><div class="t">Ayer, 21:10</div></div></div>
+          <div class="alert-item low"><div class="mark"></div><div><div>Sensor NPK sin reportar datos</div><div class="t">Ayer, 18:32</div></div></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="footbar"><span class="g"></span><span class="r"></span></div>
+</main>
+
+<script>
+  var titles = { resumen: 'Resumen', sensores: 'Sensores', alertas: 'Alertas' };
+  document.querySelectorAll('nav.side button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('nav.side button').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+      btn.classList.add('active');
+      var key = btn.getAttribute('data-view');
+      document.getElementById('view-' + key).classList.add('active');
+      document.getElementById('page-title').textContent = titles[key];
+    });
+  });
+</script>
+</body>
+</html>
